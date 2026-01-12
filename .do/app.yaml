@@ -1,6 +1,10 @@
 name: whispr-backend
 services:
   - name: nest-api
+    github:
+      repo: blinkdagger182/whispr-backend
+      branch: main
+      deploy_on_push: true
     source_dir: whisper-nestjs
     dockerfile_path: Dockerfile
     http_port: 3000
@@ -10,6 +14,10 @@ services:
       - key: WHISPER_BASE_URL
         value: https://$APP_DOMAIN/whisper
   - name: whisper-api
+    github:
+      repo: blinkdagger182/whispr-backend
+      branch: main
+      deploy_on_push: true
     source_dir: whisper-python
     dockerfile_path: Dockerfile
     http_port: 8080
