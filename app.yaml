@@ -1,7 +1,8 @@
 name: whisper-platform
 services:
   - name: nest-api
-    dockerfile_path: whisper-nestjs/Dockerfile
+    source_dir: whisper-nestjs
+    dockerfile_path: Dockerfile
     http_port: 3000
     routes:
       - path: /
@@ -9,7 +10,8 @@ services:
       - key: WHISPER_BASE_URL
         value: https://$APP_DOMAIN/whisper
   - name: whisper-api
-    dockerfile_path: whisper-python/Dockerfile
+    source_dir: whisper-python
+    dockerfile_path: Dockerfile
     http_port: 8080
     routes:
       - path: /whisper
