@@ -1,4 +1,4 @@
-name: whisper-platform
+name: whispr-backend
 services:
   - name: nest-api
     source_dir: whisper-nestjs
