@@ -6,7 +6,7 @@ services:
       branch: main
       deploy_on_push: true
     source_dir: whisper-nestjs
-    dockerfile_path: Dockerfile
+    dockerfile_path: whisper-nestjs/Dockerfile
     http_port: 3000
     routes:
       - path: /
@@ -19,7 +19,7 @@ services:
       branch: main
       deploy_on_push: true
     source_dir: whisper-python
-    dockerfile_path: Dockerfile
+    dockerfile_path: whisper-python/Dockerfile
     http_port: 8080
     routes:
       - path: /whisper
