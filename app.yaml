@@ -1,0 +1,22 @@
+name: whisper-platform
+services:
+  - name: nest-api
+    dockerfile_path: whisper-nestjs/Dockerfile
+    http_port: 3000
+    routes:
+      - path: /
+    envs:
+      - key: WHISPER_BASE_URL
+        value: https://$APP_DOMAIN/whisper
+  - name: whisper-api
+    dockerfile_path: whisper-python/Dockerfile
+    http_port: 8080
+    routes:
+      - path: /whisper
+    envs:
+      - key: WHISPER_MODEL
+        value: tiny
+      - key: WHISPER_DEVICE
+        value: cpu
+      - key: WHISPER_COMPUTE_TYPE
+        value: int8

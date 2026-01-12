@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Faster Whisper Upload</title>
+    <style>
+      :root {
+        color-scheme: light;
+      }
+      body {
+        margin: 0;
+        font-family: "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+        background: linear-gradient(135deg, #f4f1ec, #e3edea);
+        color: #1e2328;
+      }
+      .wrap {
+        max-width: 720px;
+        margin: 48px auto;
+        padding: 24px;
+      }
+      .card {
+        background: #ffffffcc;
+        border: 1px solid #d7dfdc;
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: 0 12px 30px rgba(18, 33, 28, 0.12);
+      }
+      h1 {
+        margin: 0 0 12px;
+        font-size: 28px;
+        letter-spacing: -0.02em;
+      }
+      p {
+        margin: 0 0 18px;
+        color: #374047;
+      }
+      label {
+        display: block;
+        margin: 12px 0 6px;
+        font-weight: 600;
+        font-size: 14px;
+      }
+      input[type="file"],
+      input[type="text"],
+      select {
+        width: 100%;
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid #c9d4d1;
+        background: #f7fbfa;
+        font-size: 14px;
+      }
+      .row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+      .actions {
+        margin-top: 18px;
+        display: flex;
+        gap: 12px;
+      }
+      button {
+        border: none;
+        border-radius: 10px;
+        padding: 10px 16px;
+        font-weight: 600;
+        cursor: pointer;
+        background: #1f7a66;
+        color: white;
+      }
+      button.secondary {
+        background: #e6eeeb;
+        color: #1f7a66;
+      }
+      pre {
+        margin-top: 18px;
+        padding: 12px;
+        background: #0f1f1b;
+        color: #d8f3e9;
+        border-radius: 10px;
+        overflow-x: auto;
+        font-size: 13px;
+      }
+      .status {
+        margin-top: 12px;
+        font-size: 14px;
+        color: #1f7a66;
+      }
+      @media (max-width: 600px) {
+        .row {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="card">
+        <h1>Faster Whisper Upload</h1>
+        <p>Upload audio from your phone and get a transcription back.</p>
+        <form id="form">
+          <label for="audio">Audio file</label>
+          <input id="audio" name="audio" type="file" accept="audio/*" required />
+
+          <div class="row">
+            <div>
+              <label for="language">Language (optional, e.g. en, fr)</label>
+              <input id="language" name="language" type="text" placeholder="auto-detect" />
+            </div>
+            <div>
+              <label for="task">Task</label>
+              <select id="task" name="task">
+                <option value="transcribe" selected>transcribe</option>
+                <option value="translate">translate</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row">
+            <div>
+              <label for="vad_filter">VAD filter</label>
+              <select id="vad_filter" name="vad_filter">
+                <option value="true" selected>on</option>
+                <option value="false">off</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button type="submit">Upload & Transcribe</button>
+            <button class="secondary" type="reset">Reset</button>
+          </div>
+        </form>
+        <div id="status" class="status"></div>
+        <pre id="output"></pre>
+      </div>
+    </div>
+    <script>
+      const form = document.getElementById("form");
+      const statusEl = document.getElementById("status");
+      const output = document.getElementById("output");
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        statusEl.textContent = "Uploading...";
+        output.textContent = "";
+
+        const formData = new FormData(form);
+        const response = await fetch("/whisper/transcribe", {
+          method: "POST",
+          body: formData,
+        });
+        if (!response.ok) {
+          statusEl.textContent = "Error: " + response.statusText;
+          output.textContent = await response.text();
+          return;
+        }
+        const data = await response.json();
+        statusEl.textContent = "Done";
+        output.textContent = data.text || "(no text)";
+      });
+    </script>
+  </body>
+</html>
