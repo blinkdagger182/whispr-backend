@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  HttpCode,
   Post,
   UploadedFiles,
   UseInterceptors,
@@ -13,6 +14,7 @@ type TranscribeBody = {
   language?: string;
   task?: string;
   vad_filter?: string | boolean;
+  webhook_url?: string;
 };
 
 @Controller()
@@ -20,6 +22,7 @@ export class WhisperController {
   constructor(private readonly whisperService: WhisperService) {}
 
   @Post('/transcribe')
+  @HttpCode(202)
   @UseInterceptors(
     FileFieldsInterceptor([
       { name: 'file', maxCount: 1 },
@@ -39,6 +42,6 @@ export class WhisperController {
       throw new BadRequestException('file is required');
     }
 
-    return this.whisperService.transcribe(upload, body);
+    return this.whisperService.enqueueTranscription(upload, body);
   }
 }
