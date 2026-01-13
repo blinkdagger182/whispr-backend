@@ -32,6 +32,18 @@ export function getPool(): Pool {
       disableSslValue === '1' ||
       disableSslValue === 'yes' ||
       (sslMode !== null && sslMode.toLowerCase() === 'disable');
+    let effectiveSslMode = sslMode;
+    let connectionStringToUse = connectionString;
+    if (shouldDisableSsl) {
+      try {
+        const parsed = new URL(connectionString);
+        parsed.searchParams.set('sslmode', 'disable');
+        connectionStringToUse = parsed.toString();
+        effectiveSslMode = 'disable';
+      } catch {
+        effectiveSslMode = sslMode;
+      }
+    }
     const ssl = shouldDisableSsl ? false : { rejectUnauthorized: false };
     console.log(
       'db:init',
@@ -39,12 +51,12 @@ export function getPool(): Pool {
         host: connectionHost,
         port: connectionPort,
         database: connectionDb,
-        sslMode,
+        sslMode: effectiveSslMode,
         disableSslValue,
         shouldDisableSsl,
       }),
     );
-    pool = new Pool({ connectionString, ssl });
+    pool = new Pool({ connectionString: connectionStringToUse, ssl });
   }
   return pool;
 }
