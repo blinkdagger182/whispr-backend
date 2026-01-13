@@ -1,5 +1,5 @@
 import { Pool } from 'pg';
-import { requireEnv } from './config';
+import { optionalEnv, requireEnv } from './config';
 
 let pool: Pool | null = null;
 
@@ -9,7 +9,13 @@ export function getPool(): Pool {
       'DATABASE_URL',
       process.env.DATABASE_URL,
     );
-    pool = new Pool({ connectionString, ssl: { rejectUnauthorized: false } });
+    const disableSsl = optionalEnv(
+      'PGSSL_DISABLE',
+      process.env.PGSSL_DISABLE,
+    );
+    const ssl =
+      disableSsl === 'true' ? false : { rejectUnauthorized: false };
+    pool = new Pool({ connectionString, ssl });
   }
   return pool;
 }

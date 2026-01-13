@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
+import { optionalEnv } from './config';
 import { JobsService } from './jobs/jobs.service';
 import { QueueService } from './queue/queue.service';
 import { SpacesService } from './storage/spaces.service';
@@ -23,6 +24,10 @@ export class WhisperService {
     file: Express.Multer.File,
     body: TranscribeBody,
   ) {
+    const defaultWebhookUrl = optionalEnv(
+      'DEFAULT_WEBHOOK_URL',
+      process.env.DEFAULT_WEBHOOK_URL,
+    );
     const key = `audio/${randomUUID()}-${file.originalname || 'audio'}`;
     await this.spacesService.uploadBuffer(
       key,
@@ -34,7 +39,7 @@ export class WhisperService {
       storageKey: key,
       originalFilename: file.originalname,
       contentType: file.mimetype,
-      webhookUrl: body.webhook_url,
+      webhookUrl: body.webhook_url || defaultWebhookUrl,
     });
 
     await this.queueService.publishJob(job.id);

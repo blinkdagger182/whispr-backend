@@ -7,6 +7,7 @@ import { JobsController } from './jobs/jobs.controller';
 import { JobsService } from './jobs/jobs.service';
 import { QueueService } from './queue/queue.service';
 import { SpacesService } from './storage/spaces.service';
+import { WebhookController } from './webhook/webhook.controller';
 import { WhisperController } from './whisper.controller';
 import { WhisperService } from './whisper.service';
 
@@ -17,6 +18,7 @@ import { WhisperService } from './whisper.service';
     ChatController,
     WhisperController,
     JobsController,
+    WebhookController,
   ],
   providers: [
     AppService,
