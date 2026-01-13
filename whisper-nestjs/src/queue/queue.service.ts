@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import amqplib, { Channel, Connection } from 'amqplib';
+import amqplib, { Channel, ChannelModel } from 'amqplib';
 import { numberEnv, requireEnv } from '../config';
 
 type JobMessage = {
@@ -8,7 +8,7 @@ type JobMessage = {
 
 @Injectable()
 export class QueueService {
-  private connection: Connection | null = null;
+  private connection: ChannelModel | null = null;
   private channel: Channel | null = null;
   private readonly exchange = 'transcribe.direct';
   private readonly jobsQueue = 'transcribe.jobs';
@@ -21,28 +21,31 @@ export class QueueService {
   );
 
   private async getChannel(): Promise<Channel> {
-    if (!this.channel) {
-      const url = requireEnv('RABBITMQ_URL', process.env.RABBITMQ_URL);
-      this.connection = await amqplib.connect(url);
-      this.channel = await this.connection.createChannel();
-      await this.channel.assertExchange(this.exchange, 'direct', {
-        durable: true,
-      });
-      await this.channel.assertQueue(this.jobsQueue, { durable: true });
-      await this.channel.assertQueue(this.retryQueue, {
-        durable: true,
-        arguments: {
-          'x-message-ttl': this.retryDelayMs,
-          'x-dead-letter-exchange': this.exchange,
-          'x-dead-letter-routing-key': 'jobs',
-        },
-      });
-      await this.channel.assertQueue(this.dlqQueue, { durable: true });
-      await this.channel.bindQueue(this.jobsQueue, this.exchange, 'jobs');
-      await this.channel.bindQueue(this.retryQueue, this.exchange, 'retry');
-      await this.channel.bindQueue(this.dlqQueue, this.exchange, 'dlq');
+    if (this.channel) {
+      return this.channel;
     }
-    return this.channel;
+    const url = requireEnv('RABBITMQ_URL', process.env.RABBITMQ_URL);
+    const connection: ChannelModel = await amqplib.connect(url);
+    const channel = await connection.createChannel();
+    await channel.assertExchange(this.exchange, 'direct', {
+        durable: true,
+    });
+    await channel.assertQueue(this.jobsQueue, { durable: true });
+    await channel.assertQueue(this.retryQueue, {
+      durable: true,
+      arguments: {
+        'x-message-ttl': this.retryDelayMs,
+        'x-dead-letter-exchange': this.exchange,
+        'x-dead-letter-routing-key': 'jobs',
+      },
+    });
+    await channel.assertQueue(this.dlqQueue, { durable: true });
+    await channel.bindQueue(this.jobsQueue, this.exchange, 'jobs');
+    await channel.bindQueue(this.retryQueue, this.exchange, 'retry');
+    await channel.bindQueue(this.dlqQueue, this.exchange, 'dlq');
+    this.connection = connection;
+    this.channel = channel;
+    return channel;
   }
 
   async publishJob(jobId: string): Promise<void> {

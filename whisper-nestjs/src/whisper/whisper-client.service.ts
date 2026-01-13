@@ -20,7 +20,8 @@ export class WhisperClientService {
     contentType?: string,
   ): Promise<WhisperResponse> {
     const form = new FormData();
-    const blob = new Blob([buffer], {
+    const bytes = new Uint8Array(buffer);
+    const blob = new Blob([bytes], {
       type: contentType || 'application/octet-stream',
     });
     form.append('file', blob, filename || 'audio');
