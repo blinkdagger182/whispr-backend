@@ -46,7 +46,7 @@ def healthz() -> dict[str, str]:
 async def transcribe(
     audio: Optional[UploadFile] = File(None),
     file: Optional[UploadFile] = File(None),
-    language: Optional[str] = Form(None),
+    language: Optional[str] = Form("en"),
     task: str = Form("transcribe"),
     vad_filter: bool = Form(True),
 ) -> JSONResponse:
@@ -65,7 +65,7 @@ async def transcribe(
     try:
         segments, info = model.transcribe(
             tmp_path,
-            language=language or None,
+            language=language,
             task=task,
             vad_filter=vad_filter,
         )
