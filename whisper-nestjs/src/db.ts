@@ -13,8 +13,13 @@ export function getPool(): Pool {
       'PGSSL_DISABLE',
       process.env.PGSSL_DISABLE,
     );
+    const disableSslValue = (disableSsl ?? '').toLowerCase();
     const ssl =
-      disableSsl === 'true' ? false : { rejectUnauthorized: false };
+      disableSslValue === 'true' ||
+      disableSslValue === '1' ||
+      disableSslValue === 'yes'
+        ? false
+        : { rejectUnauthorized: false };
     pool = new Pool({ connectionString, ssl });
   }
   return pool;
