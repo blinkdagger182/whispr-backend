@@ -48,10 +48,11 @@ export function getPool(): Pool {
       'PGSSL_CA_B64',
       process.env.PGSSL_CA_B64,
     );
+    const caValue = caBase64?.trim();
     const ssl = shouldDisableSsl
       ? false
-      : caBase64
-        ? { ca: Buffer.from(caBase64, 'base64').toString('utf-8') }
+      : caValue
+        ? { ca: Buffer.from(caValue, 'base64').toString('utf-8') }
         : { rejectUnauthorized: false };
     console.log(
       'db:init',
@@ -62,6 +63,8 @@ export function getPool(): Pool {
         sslMode: effectiveSslMode,
         disableSslValue,
         shouldDisableSsl,
+        hasCa: Boolean(caValue),
+        caLength: caValue?.length ?? 0,
       }),
     );
     pool = new Pool({ connectionString: connectionStringToUse, ssl });
