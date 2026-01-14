@@ -2,6 +2,9 @@ name: whispr-backend
 region: sgp
 services:
   - name: nest-api
+    github:
+      repo: blinkdagger182/whispr-backend
+      branch: main
     dockerfile_path: Dockerfile.nest
     http_port: 3000
     routes:
@@ -41,6 +44,9 @@ services:
         scope: RUN_TIME
         value: ${OPENROUTER_API_KEY}
   - name: whisper-api
+    github:
+      repo: blinkdagger182/whispr-backend
+      branch: main
     dockerfile_path: Dockerfile.whisper
     http_port: 8080
     routes:
@@ -71,6 +77,9 @@ services:
         value: ${RABBITMQ_PASSWORD}
 workers:
   - name: nest-worker
+    github:
+      repo: blinkdagger182/whispr-backend
+      branch: main
     dockerfile_path: Dockerfile.nest
     run_command: bun run start:worker
     envs:
