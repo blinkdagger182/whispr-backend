@@ -32,6 +32,16 @@ export function getPool(): Pool {
       disableSslValue === '1' ||
       disableSslValue === 'yes' ||
       (sslMode !== null && sslMode.toLowerCase() === 'disable');
+    const insecureSslValue = (optionalEnv(
+      'PGSSL_INSECURE',
+      process.env.PGSSL_INSECURE,
+    ) ?? '')
+      .trim()
+      .toLowerCase();
+    const allowInsecureSsl =
+      insecureSslValue === 'true' ||
+      insecureSslValue === '1' ||
+      insecureSslValue === 'yes';
     let effectiveSslMode = sslMode;
     let connectionStringToUse = connectionString;
     if (shouldDisableSsl) {
@@ -49,10 +59,23 @@ export function getPool(): Pool {
       process.env.PGSSL_CA_B64,
     );
     const caValue = caBase64?.trim();
+    const caPem = caValue
+      ? Buffer.from(caValue, 'base64').toString('utf-8')
+      : null;
+    if (caPem) {
+      try {
+        const parsed = new URL(connectionStringToUse);
+        parsed.searchParams.delete('sslmode');
+        connectionStringToUse = parsed.toString();
+        effectiveSslMode = effectiveSslMode ?? 'require';
+      } catch {
+        // Keep connection string as-is if parsing fails.
+      }
+    }
     const ssl = shouldDisableSsl
       ? false
-      : caValue
-        ? { ca: Buffer.from(caValue, 'base64').toString('utf-8') }
+      : caPem
+        ? { ca: caPem, rejectUnauthorized: !allowInsecureSsl }
         : { rejectUnauthorized: false };
     console.log(
       'db:init',
@@ -63,8 +86,9 @@ export function getPool(): Pool {
         sslMode: effectiveSslMode,
         disableSslValue,
         shouldDisableSsl,
-        hasCa: Boolean(caValue),
-        caLength: caValue?.length ?? 0,
+        hasCa: Boolean(caPem),
+        caLength: caPem?.length ?? 0,
+        allowInsecureSsl,
       }),
     );
     pool = new Pool({ connectionString: connectionStringToUse, ssl });
