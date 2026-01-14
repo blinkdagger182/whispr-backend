@@ -1,0 +1,103 @@
+name: whispr-backend
+region: sgp
+services:
+  - name: nest-api
+    dockerfile_path: Dockerfile.nest
+    http_port: 3000
+    routes:
+      - path: /
+    envs:
+      - key: DATABASE_URL
+        scope: RUN_TIME
+        value: ${DATABASE_URL}
+      - key: RABBITMQ_URL
+        scope: RUN_TIME
+        value: amqp://whispr:${RABBITMQ_PASSWORD}@rabbitmq:5672
+      - key: SPACES_ENDPOINT
+        scope: RUN_TIME
+        value: ${SPACES_ENDPOINT}
+      - key: SPACES_REGION
+        scope: RUN_TIME
+        value: ${SPACES_REGION}
+      - key: SPACES_KEY
+        scope: RUN_TIME
+        value: ${SPACES_KEY}
+      - key: SPACES_SECRET
+        scope: RUN_TIME
+        value: ${SPACES_SECRET}
+      - key: SPACES_BUCKET
+        scope: RUN_TIME
+        value: ${SPACES_BUCKET}
+      - key: WHISPER_BASE_URL
+        scope: RUN_TIME
+        value: http://whisper-api:8080/whisper
+      - key: DEFAULT_WEBHOOK_URL
+        scope: RUN_TIME
+        value: https://whispr-backend-o5hdz.ondigitalocean.app/webhooks/transcribe
+      - key: PGSSL_CA_B64
+        scope: RUN_TIME
+        value: ${PGSSL_CA_B64}
+      - key: OPENROUTER_API_KEY
+        scope: RUN_TIME
+        value: ${OPENROUTER_API_KEY}
+  - name: whisper-api
+    dockerfile_path: Dockerfile.whisper
+    http_port: 8080
+    routes:
+      - path: /whisper
+    envs:
+      - key: WHISPER_MODEL
+        scope: RUN_TIME
+        value: tiny
+      - key: WHISPER_DEVICE
+        scope: RUN_TIME
+        value: cpu
+      - key: WHISPER_COMPUTE_TYPE
+        scope: RUN_TIME
+        value: int8
+  - name: rabbitmq
+    image:
+      registry_type: DOCKER_HUB
+      repository: rabbitmq
+      tag: "3"
+    internal_ports:
+      - 5672
+    envs:
+      - key: RABBITMQ_DEFAULT_USER
+        scope: RUN_TIME
+        value: whispr
+      - key: RABBITMQ_DEFAULT_PASS
+        scope: RUN_TIME
+        value: ${RABBITMQ_PASSWORD}
+workers:
+  - name: nest-worker
+    dockerfile_path: Dockerfile.nest
+    run_command: bun run start:worker
+    envs:
+      - key: DATABASE_URL
+        scope: RUN_TIME
+        value: ${DATABASE_URL}
+      - key: RABBITMQ_URL
+        scope: RUN_TIME
+        value: amqp://whispr:${RABBITMQ_PASSWORD}@rabbitmq:5672
+      - key: SPACES_ENDPOINT
+        scope: RUN_TIME
+        value: ${SPACES_ENDPOINT}
+      - key: SPACES_REGION
+        scope: RUN_TIME
+        value: ${SPACES_REGION}
+      - key: SPACES_KEY
+        scope: RUN_TIME
+        value: ${SPACES_KEY}
+      - key: SPACES_SECRET
+        scope: RUN_TIME
+        value: ${SPACES_SECRET}
+      - key: SPACES_BUCKET
+        scope: RUN_TIME
+        value: ${SPACES_BUCKET}
+      - key: WHISPER_BASE_URL
+        scope: RUN_TIME
+        value: http://whisper-api:8080/whisper
+      - key: PGSSL_CA_B64
+        scope: RUN_TIME
+        value: ${PGSSL_CA_B64}
