@@ -87,17 +87,21 @@ export class JobsService {
     resultSegments: unknown,
   ): Promise<void> {
     const pool = getPool();
+    const segmentsJson =
+      resultSegments === null || resultSegments === undefined
+        ? null
+        : JSON.stringify(resultSegments);
     await pool.query(
       `
       update jobs
       set status = 'completed',
           result_text = $2,
           result_language = $3,
-          result_segments = $4,
+          result_segments = $4::jsonb,
           updated_at = now()
       where id = $1
       `,
-      [id, resultText, resultLanguage, resultSegments],
+      [id, resultText, resultLanguage, segmentsJson],
     );
   }
 
