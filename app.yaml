@@ -15,7 +15,7 @@ services:
         value: ${DATABASE_URL}
       - key: RABBITMQ_URL
         scope: RUN_TIME
-        value: amqp://whispr:${RABBITMQ_PASSWORD}@rabbitmq:5672
+        value: amqp://whispr:SuperSecurePassword@rabbitmq:5672
       - key: SPACES_ENDPOINT
         scope: RUN_TIME
         value: ${SPACES_ENDPOINT}
@@ -74,7 +74,7 @@ services:
         value: whispr
       - key: RABBITMQ_DEFAULT_PASS
         scope: RUN_TIME
-        value: ${RABBITMQ_PASSWORD}
+        value: SuperSecurePassword
 workers:
   - name: nest-worker
     github:
@@ -88,7 +88,7 @@ workers:
         value: ${DATABASE_URL}
       - key: RABBITMQ_URL
         scope: RUN_TIME
-        value: amqp://whispr:${RABBITMQ_PASSWORD}@rabbitmq:5672
+        value: amqp://whispr:SuperSecurePassword@rabbitmq:5672
       - key: SPACES_ENDPOINT
         scope: RUN_TIME
         value: ${SPACES_ENDPOINT}
